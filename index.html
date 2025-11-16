@@ -312,6 +312,21 @@
             margin-top: 10px;
             display: block;
         }
+        
+        /* Estilos para lista detalhada no resultado */
+        .result li.detalhe {
+            font-size: 0.9em;
+            padding-left: 15px;
+            color: var(--text-light);
+            justify-content: flex-start;
+        }
+        .result li.detalhe span {
+            color: var(--text-light);
+        }
+        .result li.detalhe strong {
+            color: var(--text-light);
+            margin-left: 5px;
+        }
 
         /* ----------------------------------
         OUTROS ESTILOS (Disclaimer, Ads, Footer)
@@ -562,20 +577,26 @@
 
         <!-- 
         ----------------------------------
-        ABA 3: CALCULADORA DE 13º SALÁRIO
+        ABA 3: CALCULADORA DE 13º SALÁRIO (Atualizada)
         ----------------------------------
         -->
         <div id="tab-13" class="tab-content">
             <div class="calculator">
-                <h2>Cálculo do 13º Salário Proporcional</h2>
-                <p>Valor bruto do 13º com base nos meses trabalhados no ano.</p>
+                <h2>Cálculo Completo do 13º Salário</h2>
+                <p>Veja o valor bruto, os descontos e o líquido de cada parcela.</p>
                 <div class="form-group">
                     <label for="salario13">Salário Bruto (R$)</label>
                     <input type="number" id="salario13" placeholder="Ex: 3000.00">
                 </div>
-                <div class="form-group">
-                    <label for="meses13">Meses Trabalhados no Ano</label>
-                    <input type="number" id="meses13" placeholder="De 1 a 12">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="meses13">Meses Trabalhados no Ano</label>
+                        <input type="number" id="meses13" placeholder="De 1 a 12">
+                    </div>
+                    <div class="form-group">
+                        <label for="dependentes13">Dependentes (IRRF)</label>
+                        <input type="number" id="dependentes13" placeholder="0" value="0">
+                    </div>
                 </div>
                 <div class="button-group">
                     <button class="btn-secondary btn-limpar" type="button">Limpar</button>
@@ -689,10 +710,11 @@
             return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
-        // --- CÁLCULO 13º SALÁRIO ---
+        // --- CÁLCULO 13º SALÁRIO (Atualizado) ---
         function calcular13() {
             const salario = parseFloat(document.getElementById('salario13').value);
             const meses = parseInt(document.getElementById('meses13').value);
+            const dependentes = parseInt(document.getElementById('dependentes13').value) || 0;
             const resultadoDiv = document.getElementById('resultado13');
 
             if (isNaN(salario) || isNaN(meses) || salario <= 0 || meses < 1 || meses > 12) {
@@ -700,8 +722,46 @@
                 resultadoDiv.style.display = "block";
                 return;
             }
-            const decimoTerceiro = (salario / 12) * meses;
-            resultadoDiv.innerHTML = `Valor Bruto do 13º: <strong>${formatarMoeda(decimoTerceiro)}</strong>`;
+            
+            // 1. Calcular o Bruto Total
+            const totalBruto13 = (salario / 12) * meses;
+            
+            // 2. Calcular 1ª Parcela (metade do bruto, sem descontos)
+            const primeiraParcela = totalBruto13 / 2;
+            
+            // 3. Calcular Descontos (baseado no Bruto Total)
+            const descontoINSS = calcularINSS(totalBruto13); // Reutiliza a função do Sal. Líquido
+            const baseIRRF = totalBruto13 - descontoINSS - (dependentes * 225.97);
+            const descontoIRRF = calcularIRRF(baseIRRF); // Reutiliza a função do Sal. Líquido
+            
+            const totalDescontos = descontoINSS + descontoIRRF;
+            
+            // 4. Calcular 2ª Parcela (Restante do bruto - descontos totais)
+            const segundaParcela = (totalBruto13 - primeiraParcela) - totalDescontos;
+            
+            // 5. Calcular Total Líquido
+            const totalLiquido = totalBruto13 - totalDescontos;
+
+            // 6. Exibir Resultado
+            let htmlResultado = `
+                <h3>Detalhamento do 13º Salário</h3>
+                <ul>
+                    <li><span>Valor Bruto Total:</span> <strong>${formatarMoeda(totalBruto13)}</strong></li>
+                    
+                    <li style="margin-top: 15px;"><span>1ª Parcela (a receber até Nov):</span> <strong>${formatarMoeda(primeiraParcela)}</strong></li>
+                    <li class="detalhe"><span>(Sem descontos)</span></li>
+                    
+                    <li style="margin-top: 15px;"><span>2ª Parcela (a receber até Dez):</span> <strong>${formatarMoeda(segundaParcela)}</strong></li>
+                    <li class="detalhe"><span>Valor Bruto (Metade):</span> <strong>${formatarMoeda(totalBruto13 / 2)}</strong></li>
+                    <li class="detalhe"><span>Desconto INSS:</span> <strong style="color: #d9534f;">-${formatarMoeda(descontoINSS)}</strong></li>
+                    <li class="detalhe"><span>Desconto IRRF:</span> <strong style="color: #d9534f;">-${formatarMoeda(descontoIRRF)}</strong></li>
+
+                    <li class="total"><span>TOTAL LÍQUIDO (Estimado):</span> <strong>${formatarMoeda(totalLiquido)}</strong></li>
+                </ul>
+                <small>Nota: A 1ª parcela é paga sem descontos. A 2ª parcela recebe os descontos de INSS e IRRF sobre o valor total.</small>
+            `;
+            
+            resultadoDiv.innerHTML = htmlResultado;
             resultadoDiv.style.display = "block";
         }
 
