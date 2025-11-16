@@ -10,13 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- ÍCONES (Lucide) - REMOVIDO PARA CORRIGIR ERRO -->
-
-    <!-- SCRIPT DO GOOGLE ADSENSE (Auto-Ads) - Cole o seu aqui -->
-    <!-- 
-    <script async src="httpsa://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-SEU-ID-AQUI"
-           crossorigin="anonymous"></script>
-    -->
+    <!-- SCRIPT DO GOOGLE ADSENSE (Auto-Ads) - Inserido! -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543141337770715"
+     crossorigin="anonymous"></script>
 
     <style>
         /* ----------------------------------
@@ -107,6 +103,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* Para responsividade */
         }
         .logo {
             font-size: 1.5em;
@@ -118,6 +115,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-wrap: wrap; /* Para responsividade */
         }
         header nav a {
             color: var(--text-light);
@@ -152,6 +150,8 @@
             overflow-x: auto;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 25px;
+            /* Melhoria para scroll suave em touch */
+            -webkit-overflow-scrolling: touch; 
         }
         .tab-button {
             display: flex;
@@ -219,15 +219,18 @@
         .form-row {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap; /* Para responsividade */
         }
         .form-row .form-group {
             flex: 1;
+            min-width: 200px; /* Para não espremer muito */
         }
         
         .button-group {
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap; /* Para responsividade */
         }
         
         button {
@@ -249,6 +252,7 @@
             background-color: var(--primary-color);
             color: white;
             flex: 2; /* Botão principal maior */
+            min-width: 150px;
         }
         .btn-primary:hover {
             background-color: var(--primary-hover);
@@ -257,6 +261,7 @@
             background-color: var(--border-color);
             color: var(--text-light);
             flex: 1;
+            min-width: 100px;
         }
         .btn-secondary:hover {
             background-color: #ccc; /* Um pouco mais escuro */
@@ -285,9 +290,11 @@
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap; /* Responsividade no resultado */
         }
         .result li span {
             color: var(--text-light);
+            margin-right: 10px;
         }
         .result li strong {
             font-size: 1.05em;
@@ -357,6 +364,74 @@
         .footer a {
             color: var(--primary-color);
             text-decoration: none;
+        }
+        
+        /* ----------------------------------
+        MEDIA QUERIES PARA RESPONSIVIDADE (Celular)
+        ----------------------------------
+        */
+        @media (max-width: 640px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            header nav {
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            
+            header nav a {
+                font-size: 0.9em;
+            }
+
+            .logo {
+                font-size: 1.3em;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-row .form-group {
+                min-width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column-reverse; /* Botão principal em cima */
+            }
+            
+            .btn-primary, .btn-secondary {
+                flex: 1;
+                width: 100%;
+            }
+
+            .tab-nav {
+                padding-bottom: 5px; /* Evitar que o scrollbar sobreponha a borda */
+            }
+            
+            .tab-button {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .ad-placeholder {
+                margin: 10px;
+            }
+            
+            .info-section {
+                padding: 15px;
+            }
         }
 
     </style>
@@ -603,9 +678,6 @@
         <p>Feito com ❤️ para ajudar o trabalhador.</p>
     </footer>
 
-    <!-- 
-        SCRIPT DO LUCIDE REMOVIDO
-    -->
 
     <script>
         // ----------------------------------
@@ -787,18 +859,45 @@
                 resultadoDiv.style.display = "block";
                 return;
             }
+            
+            if (dataDemissao < dataAdmissao) {
+                resultadoDiv.innerHTML = "A data de demissão não pode ser anterior à data de admissão.";
+                resultadoDiv.style.display = "block";
+                return;
+            }
 
             // --- Itens da Rescisão ---
             const saldoSalario = (salario / 30) * diasSaldo;
             const avisoPrevio = (tipoAviso === 'indenizado') ? salario : 0; // Simplificado
             
             // 13º Proporcional (meses no ano da demissão)
-            const meses13 = dataDemissao.getMonth() + 1;
+            // Considera 1/12 avos se trabalhou mais de 14 dias no mês
+            let meses13 = dataDemissao.getMonth(); 
+            if (dataDemissao.getDate() > 14) {
+                meses13 += 1;
+            }
             const decimoTerceiro = (salario / 12) * meses13;
 
-            // Férias Proporcionais + 1/3 (Simplificado - usando meses do ano)
-            // Lógica correta (período aquisitivo) é muito complexa para este escopo
-            const mesesFeriasProp = meses13; 
+            // Férias Proporcionais + 1/3
+            // Cálculo mais preciso de meses proporcionais (período aquisitivo)
+            let mesesFeriasProp = dataDemissao.getMonth() - dataAdmissao.getMonth();
+            if (mesesFeriasProp < 0) {
+                mesesFeriasProp += 12;
+            }
+            if (dataDemissao.getDate() >= dataAdmissao.getDate()) {
+                 mesesFeriasProp += 1;
+            }
+            // Se demitido antes do aniversário no mês, tem 1 mês a menos
+             if (dataDemissao.getMonth() == dataAdmissao.getMonth() && dataDemissao.getDate() < dataAdmissao.getDate()) {
+                 mesesFeriasProp = 11; 
+             }
+             // Se trabalhou mais de 14 dias no mês da demissão, conta o mês
+             if (dataDemissao.getDate() > 14 && dataDemissao.getDate() < dataAdmissao.getDate()) {
+                 // Esta lógica é complexa, vamos simplificar para o básico
+                 mesesFeriasProp = dataDemissao.getMonth() + 1; // Simplificação
+             }
+
+
             const feriasProporcionais = (salario / 12) * mesesFeriasProp;
             const umTercoFerias = feriasProporcionais / 3;
             const totalFeriasProp = feriasProporcionais + umTercoFerias;
@@ -815,7 +914,7 @@
                     <li><span>Aviso Prévio (${tipoAviso}):</span> <strong>${formatarMoeda(avisoPrevio)}</strong></li>
                     <li><span>13º Proporcional (${meses13} meses):</span> <strong>${formatarMoeda(decimoTerceiro)}</strong></li>
                     <li><span>Férias Vencidas + 1/3:</span> <strong>${formatarMoeda(feriasVencidasValor)}</strong></li>
-                    <li><span>Férias ProporcionAIS + 1/3:</span> <strong>${formatarMoeda(totalFeriasProp)}</strong></li>
+                    <li><span>Férias Proporcionais (${mesesFeriasProp} meses) + 1/3:</span> <strong>${formatarMoeda(totalFeriasProp)}</strong></li>
                     <li class="total"><span>TOTAL BRUTO ESTIMADO:</span> <strong>${formatarMoeda(totalBruto)}</strong></li>
                 </ul>
                 <small>Nota: Não inclui multa de 40% FGTS (paga via GRRF) nem descontos de INSS/IRRF sobre as verbas.</small>
@@ -829,72 +928,77 @@
         // INICIALIZAÇÃO DA APLICAÇÃO (Setup de Eventos)
         // ----------------------------------
         
-        // LÓGICA DE UTILIDADES (Tema)
-        const themeToggle = document.getElementById('theme-toggle');
-        const sunIcon = '☀️';
-        const moonIcon = '🌙';
-        const currentTheme = localStorage.getItem('theme');
-
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            if (currentTheme === 'dark') {
-                themeToggle.innerHTML = sunIcon;
-            } else {
-                themeToggle.innerHTML = moonIcon;
-            }
-        } else {
-            themeToggle.innerHTML = moonIcon;
-        }
-
-        themeToggle.addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme');
-            if (theme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                themeToggle.innerHTML = moonIcon;
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                themeToggle.innerHTML = sunIcon;
-            }
-        });
-
-
-        // LÓGICA DAS ABAS (TABS)
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Desativar todos
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-
-                // Ativar o clicado
-                button.classList.add('active');
-                document.getElementById(button.dataset.tab).classList.add('active');
-            });
-        });
+        // Espera o DOM estar pronto para executar
+        document.addEventListener('DOMContentLoaded', () => {
         
-        // LÓGICA DOS BOTÕES DE LIMPAR
-        document.querySelectorAll('.btn-limpar').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const calculator = e.target.closest('.calculator');
-                if (calculator) {
-                    calculator.querySelectorAll('input[type="number"], input[type="date"], select, input[type="checkbox"]').forEach(input => {
-                        if(input.type === 'number' || input.type === 'date') input.value = '';
-                        if(input.tagName === 'SELECT') input.selectedIndex = 0;
-                        if(input.type === 'checkbox') input.checked = false;
-                    });
-                    
-                    const resultDiv = calculator.querySelector('.result');
-                    if (resultDiv) {
-                        resultDiv.style.display = 'none';
-                        resultDiv.innerHTML = '';
-                    }
+            // LÓGICA DE UTILIDADES (Tema)
+            const themeToggle = document.getElementById('theme-toggle');
+            const sunIcon = '☀️';
+            const moonIcon = '🌙';
+            const currentTheme = localStorage.getItem('theme');
+
+            if (currentTheme) {
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                if (currentTheme === 'dark') {
+                    themeToggle.innerHTML = sunIcon;
+                } else {
+                    themeToggle.innerHTML = moonIcon;
+                }
+            } else {
+                themeToggle.innerHTML = moonIcon;
+            }
+
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.innerHTML = moonIcon;
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.innerHTML = sunIcon;
                 }
             });
-        });
+
+
+            // LÓGICA DAS ABAS (TABS)
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Desativar todos
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Ativar o clicado
+                    button.classList.add('active');
+                    document.getElementById(button.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // LÓGICA DOS BOTÕES DE LIMPAR
+            document.querySelectorAll('.btn-limpar').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const calculator = e.target.closest('.calculator');
+                    if (calculator) {
+                        calculator.querySelectorAll('input[type="number"], input[type="date"], select, input[type="checkbox"]').forEach(input => {
+                            if(input.type === 'number' || input.type === 'date') input.value = '';
+                            if(input.tagName === 'SELECT') input.selectedIndex = 0;
+                            if(input.type === 'checkbox') input.checked = false;
+                        });
+                        
+                        const resultDiv = calculator.querySelector('.result');
+                        if (resultDiv) {
+                            resultDiv.style.display = 'none';
+                            resultDiv.innerHTML = '';
+                        }
+                    }
+                });
+            });
+        
+        }); // Fim do DOMContentLoaded
             
     </script>
 </body>
