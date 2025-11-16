@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Trabalhista Avançada</title>
+    
+    <!-- FONTE INTER (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ÍCONES (Lucide) - REMOVIDO PARA CORRIGIR ERRO -->
+
+    <!-- SCRIPT DO GOOGLE ADSENSE (Auto-Ads) - Cole o seu aqui -->
+    <!-- 
+    <script async src="httpsa://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-SEU-ID-AQUI"
+           crossorigin="anonymous"></script>
+    -->
+
+    <style>
+        /* ----------------------------------
+        CSS VARIABLES (Para Modo Escuro)
+        ----------------------------------
+        */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-light: #555;
+            --text-lighter: #777;
+            --border-color: #eee;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --result-bg: #e6f7ff;
+            --result-border: #007bff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f0f0f0;
+            --text-light: #bbb;
+            --text-lighter: #999;
+            --border-color: #333;
+            --primary-color: #009cff;
+            --primary-hover: #007bff;
+            --result-bg: #2a394d;
+            --result-border: #009cff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ----------------------------------
+        ESTILOS GERAIS
+        ----------------------------------
+        */
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        h1 { text-align: center; }
+        h2 { font-weight: 600; text-align: left; }
+
+        p {
+            color: var(--text-light);
+            font-size: 0.9em;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        /* ----------------------------------
+        CABEÇALHO E NAVEGAÇÃO
+        ----------------------------------
+        */
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        header nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        header nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s;
+        }
+        header nav a:hover {
+            color: var(--primary-color);
+        }
+        #theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 1.2rem; /* Tamanho para o emoji */
+            line-height: 1;
+        }
+        #theme-toggle:hover {
+            background-color: var(--bg-color);
+        }
+        
+        /* ----------------------------------
+        SISTEMA DE ABAS (TABS)
+        ----------------------------------
+        */
+        .tab-nav {
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+        .tab-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: "Inter", sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 12px 18px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            transition: color 0.3s, border-color 0.3s;
+            white-space: nowrap;
+        }
+        .tab-button:hover {
+            color: var(--primary-color);
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .calculator {
+            padding-bottom: 15px;
+        }
+
+        /* ----------------------------------
+        FORMULÁRIOS E BOTÕES
+        ----------------------------------
+        */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+        input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border-radius: 5px;
+            box-sizing: border-box; 
+            font-family: "Inter", sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: "Inter", sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 2; /* Botão principal maior */
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-secondary {
+            background-color: var(--border-color);
+            color: var(--text-light);
+            flex: 1;
+        }
+        .btn-secondary:hover {
+            background-color: #ccc; /* Um pouco mais escuro */
+        }
+        [data-theme="dark"] .btn-secondary:hover {
+            background-color: #444;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--result-bg);
+            border-left: 5px solid var(--result-border);
+            border-radius: 5px;
+            font-size: 1.1em;
+            text-align: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .result ul {
+            text-align: left;
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+        .result li {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .result li span {
+            color: var(--text-light);
+        }
+        .result li strong {
+            font-size: 1.05em;
+            color: var(--text-color);
+        }
+        .result .total {
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--text-lighter);
+        }
+        .result small {
+            font-size: 0.8em;
+            color: var(--text-lighter);
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* ----------------------------------
+        OUTROS ESTILOS (Disclaimer, Ads, Footer)
+        ----------------------------------
+        */
+        .disclaimer {
+            font-size: 0.8em;
+            color: var(--text-lighter);
+            text-align: center;
+            margin-top: 20px;
+        }
+        .ad-placeholder {
+            max-width: 700px;
+            margin: 20px auto;
+            width: 100%;
+            height: 90px;
+            background-color: var(--card-bg);
+            border: 1px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-lighter);
+            font-size: 0.9em;
+        }
+        .info-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .info-section h3 {
+            color: var(--text-color);
+            text-align: left;
+            margin-top: 0;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            margin: 30px auto;
+            max-width: 700px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .footer p {
+            font-size: 0.9em;
+            color: var(--text-lighter);
+            text-align: center;
+        }
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- CABEÇALHO E NAVEGAÇÃO FIXA -->
+    <header>
+        <a href="#" class="logo">Calculadora CLT</a>
+        <nav>
+            <a href="#blog">Blog</a> <!-- Link Estratégico -->
+            <a href="#sobre">Sobre</a>
+            <a href="#privacidade">Privacidade</a>
+            <a href="#contato">Contato</a>
+            <button id="theme-toggle" title="Alternar tema">
+                🌙
+            </button>
+        </nav>
+    </header>
+
+    <!-- ANÚNCIO SUPERIOR -->
+    <div class="ad-placeholder">
+        Espaço para Bloco de Anúncio (Ex: Superior)
+    </div>
+
+    <!-- CONTAINER PRINCIPAL DAS CALCULADORAS -->
+    <div class="container">
+
+        <!-- NAVEGAÇÃO DAS ABAS -->
+        <div class="tab-nav">
+            <button class="tab-button active" data-tab="tab-rescisao">
+                Rescisão
+            </button>
+            <button class="tab-button" data-tab="tab-liquido">
+                Salário Líquido
+            </button>
+            <button class="tab-button" data-tab="tab-13">
+                13º Salário
+            </button>
+            <button class="tab-button" data-tab="tab-ferias">
+                Férias
+            </button>
+            <button class="tab-button" data-tab="tab-extras">
+                Horas Extras
+            </button>
+        </div>
+
+        <!-- 
+        ----------------------------------
+        ABA 1: CALCULADORA DE RESCISÃO (Melhorada)
+        ----------------------------------
+        -->
+        <div id="tab-rescisao" class="tab-content active">
+            <div class="calculator">
+                <h2>Cálculo de Rescisão (Sem Justa Causa)</h2>
+                <p>Estimativa das principais verbas rescisórias.</p>
+                <div class="form-group">
+                    <label for="salarioRescisao">Salário Bruto (R$)</label>
+                    <input type="number" id="salarioRescisao" placeholder="Ex: 3000.00">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataAdmissao">Data de Admissão</label>
+                        <input type="date" id="dataAdmissao">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataDemissao">Data de Demissão</label>
+                        <input type="date" id="dataDemissao">
+                    </div>
+                </div>
+                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="diasSaldo">Dias de Saldo Salário</label>
+                        <input type="number" id="diasSaldo" placeholder="Ex: 15">
+                    </div>
+                    <div class="form-group">
+                        <label for="avisoPrevio">Aviso Prévio</label>
+                        <select id="avisoPrevio">
+                            <option value="indenizado">Indenizado</option>
+                            <option value="trabalhado">Trabalhado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="feriasVencidas" style="width: auto;">
+                        Possui Férias Vencidas (não tiradas)?
+                    </label>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary btn-limpar" type="button">Limpar</button>
+                    <button class="btn-primary" onclick="calcularRescisao()">Calcular Rescisão</button>
+                </div>
+                <div class="result" id="resultadoRescisao" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 
+        ----------------------------------
+        ABA 2: CALCULADORA DE SALÁRIO LÍQUIDO (Nova)
+        ----------------------------------
+        -->
+        <div id="tab-liquido" class="tab-content">
+             <div class="calculator">
+                <h2>Cálculo de Salário Líquido</h2>
+                <p>Descubra o valor líquido do seu salário após descontos de INSS e IRRF (Tabelas 2024).</p>
+                <div class="form-group">
+                    <label for="salarioBruto">Salário Bruto (R$)</label>
+                    <input type="number" id="salarioBruto" placeholder="Ex: 3500.00">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dependentes">Dependentes (IRRF)</label>
+                        <input type="number" id="dependentes" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="outrosDescontos">Outros Descontos (R$)</label>
+                        <input type="number" id="outrosDescontos" placeholder="Ex: 150.00" value="0">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary btn-limpar" type="button">Limpar</button>
+                    <button class="btn-primary" onclick="calcularSalarioLiquido()">Calcular Salário Líquido</button>
+                </div>
+                <div class="result" id="resultadoLiquido" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 
+        ----------------------------------
+        ABA 3: CALCULADORA DE 13º SALÁRIO
+        ----------------------------------
+        -->
+        <div id="tab-13" class="tab-content">
+            <div class="calculator">
+                <h2>Cálculo do 13º Salário Proporcional</h2>
+                <p>Valor bruto do 13º com base nos meses trabalhados no ano.</p>
+                <div class="form-group">
+                    <label for="salario13">Salário Bruto (R$)</label>
+                    <input type="number" id="salario13" placeholder="Ex: 3000.00">
+                </div>
+                <div class="form-group">
+                    <label for="meses13">Meses Trabalhados no Ano</label>
+                    <input type="number" id="meses13" placeholder="De 1 a 12">
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary btn-limpar" type="button">Limpar</button>
+                    <button class="btn-primary" onclick="calcular13()">Calcular 13º</button>
+                </div>
+                <div class="result" id="resultado13" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 
+        ----------------------------------
+        ABA 4: CALCULADORA DE FÉRIAS
+        ----------------------------------
+        -->
+        <div id="tab-ferias" class="tab-content">
+            <div class="calculator">
+                <h2>Cálculo de Férias</h2>
+                <p>Valor bruto a receber pelas férias, incluindo o 1/3 constitucional.</p>
+                <div class="form-group">
+                    <label for="salarioFerias">Salário Bruto (R$)</label>
+                    <input type="number" id="salarioFerias" placeholder="Ex: 3000.00">
+                </div>
+                <div class="form-group">
+                    <label for="diasFerias">Dias de Férias a Tirar</label>
+                    <input type="number" id="diasFerias" placeholder="Ex: 30" value="30">
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary btn-limpar" type="button">Limpar</button>
+                    <button class="btn-primary" onclick="calcularFerias()">Calcular Férias</button>
+                </div>
+                <div class="result" id="resultadoFerias" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <!-- 
+        ----------------------------------
+        ABA 5: CALCULADORA DE HORAS EXTRAS (Nova)
+        ----------------------------------
+        -->
+        <div id="tab-extras" class="tab-content">
+            <div class="calculator">
+                <h2>Cálculo de Horas Extras</h2>
+                <p>Estime o valor a receber por horas extras (base 220h mensais).</p>
+                <div class="form-group">
+                    <label for="salarioHE">Salário Bruto (R$)</label>
+                    <input type="number" id="salarioHE" placeholder="Ex: 2200.00">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="horas50">Horas a 50%</label>
+                        <input type="number" id="horas50" placeholder="Ex: 10" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="horas100">Horas a 100%</label>
+                        <input type="number" id="horas100" placeholder="Ex: 2" value="0">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary btn-limpar" type="button">Limpar</button>
+                    <button class="btn-primary" onclick="calcularHorasExtras()">Calcular Horas Extras</button>
+                </div>
+                <div class="result" id="resultadoHE" style="display:none;"></div>
+            </div>
+        </div>
+
+        <p class="disclaimer">
+            <strong>Aviso Importante:</strong> Esta calculadora fornece estimativas e não substitui o cálculo oficial feito pelo RH da empresa ou por um contador. Os valores são apenas para fins educacionais e podem não incluir todos os descontos, adicionais ou particularidades de convenções coletivas.
+        </p>
+    </div>
+
+    <!-- ANÚNCIO INFERIOR -->
+    <div class="ad-placeholder">
+        Espaço para Bloco de Anúncio (Ex: Inferior)
+    </div>
+
+    <!-- SEÇÕES DE INFORMAÇÃO (Rodapé) -->
+    <div class="container" style="max-width: 700px; margin: 20px auto;">
+        <div id="sobre" class="info-section">
+            <h3>Sobre Nós</h3>
+            <p>
+                Este site foi criado por um estudante de Direito apaixonado por tecnologia e por tornar a informação acessível a todos. 
+                Acreditamos que o conhecimento sobre os direitos trabalhistas deve ser claro e fácil de entender.
+            </p>
+        </div>
+        <div id="privacidade" class="info-section">
+            <h3>Política de Privacidade</h3>
+            <p>
+                Não coletamos informações pessoais. Todos os cálculos são feitos no seu navegador. Usamos cookies de terceiros (Google AdSense) para publicidade.
+                Você pode desativar os anúncios personalizados nas <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Configurações de anúncios do Google</a>.
+            </p>
+        </div>
+        <div id="contato" class="info-section">
+            <h3>Contato</h3>
+            <p>Encontrou um erro ou tem sugestões? Envie um e-mail para: <a href="mailto:alissoncambui.adv@gmail.com">alissoncambui.adv@gmail.com</a></p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Calculadora CLT - Todos os direitos reservados.</p>
+        <p>Feito com ❤️ para ajudar o trabalhador.</p>
+    </footer>
+
+    <!-- 
+        SCRIPT DO LUCIDE REMOVIDO
+    -->
+
+    <script>
+        // ----------------------------------
+        // LÓGICA DAS CALCULADORAS (Escopo Global para onclick)
+        // ----------------------------------
+
+        // Formatar como moeda BRL
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // --- CÁLCULO 13º SALÁRIO ---
+        function calcular13() {
+            const salario = parseFloat(document.getElementById('salario13').value);
+            const meses = parseInt(document.getElementById('meses13').value);
+            const resultadoDiv = document.getElementById('resultado13');
+
+            if (isNaN(salario) || isNaN(meses) || salario <= 0 || meses < 1 || meses > 12) {
+                resultadoDiv.innerHTML = "Por favor, insira valores válidos.";
+                resultadoDiv.style.display = "block";
+                return;
+            }
+            const decimoTerceiro = (salario / 12) * meses;
+            resultadoDiv.innerHTML = `Valor Bruto do 13º: <strong>${formatarMoeda(decimoTerceiro)}</strong>`;
+            resultadoDiv.style.display = "block";
+        }
+
+        // --- CÁLCULO DE FÉRIAS ---
+        function calcularFerias() {
+            const salario = parseFloat(document.getElementById('salarioFerias').value);
+            const dias = parseInt(document.getElementById('diasFerias').value);
+            const resultadoDiv = document.getElementById('resultadoFerias');
+
+            if (isNaN(salario) || isNaN(dias) || salario <= 0 || dias < 1 || dias > 30) {
+                resultadoDiv.innerHTML = "Por favor, insira um salário válido e um número de dias (entre 1 e 30).";
+                resultadoDiv.style.display = "block";
+                return;
+            }
+
+            const valorDiasFerias = (salario / 30) * dias;
+            const umTercoConstitucional = valorDiasFerias / 3;
+            const totalBrutoFerias = valorDiasFerias + umTercoConstitucional;
+
+            let htmlResultado = `
+                <h3>Valor Bruto das Férias (${dias} dias)</h3>
+                <ul>
+                    <li><span>Valor das Férias:</span> <strong>${formatarMoeda(valorDiasFerias)}</strong></li>
+                    <li><span>Adicional de 1/3:</span> <strong>${formatarMoeda(umTercoConstitucional)}</strong></li>
+                    <li class="total"><span>TOTAL BRUTO:</span> <strong>${formatarMoeda(totalBrutoFerias)}</strong></li>
+                </ul>
+                <small>Nota: Este cálculo é bruto. Descontos de INSS e IRRF serão aplicados.</small>
+            `;
+            resultadoDiv.innerHTML = htmlResultado;
+            resultadoDiv.style.display = "block";
+        }
+
+        // --- CÁLCULO DE HORAS EXTRAS ---
+        function calcularHorasExtras() {
+            const salario = parseFloat(document.getElementById('salarioHE').value);
+            const horas50 = parseFloat(document.getElementById('horas50').value) || 0;
+            const horas100 = parseFloat(document.getElementById('horas100').value) || 0;
+            const resultadoDiv = document.getElementById('resultadoHE');
+            
+            if (isNaN(salario) || salario <= 0) {
+                resultadoDiv.innerHTML = "Por favor, insira um salário válido.";
+                resultadoDiv.style.display = "block";
+                return;
+            }
+
+            const valorHora = salario / 220;
+            const valorExtra50 = (valorHora * 1.5) * horas50;
+            const valorExtra100 = (valorHora * 2) * horas100;
+            const totalExtras = valorExtra50 + valorExtra100;
+            
+             let htmlResultado = `
+                <h3>Valor Bruto das Horas Extras</h3>
+                <ul>
+                    <li><span>Valor da Hora Normal:</span> <strong>${formatarMoeda(valorHora)}</strong></li>
+                    <li><span>Total Horas 50% (${horas50}h):</span> <strong>${formatarMoeda(valorExtra50)}</strong></li>
+                    <li><span>Total Horas 100% (${horas100}h):</span> <strong>${formatarMoeda(valorExtra100)}</strong></li>
+                    <li class="total"><span>TOTAL BRUTO:</span> <strong>${formatarMoeda(totalExtras)}</strong></li>
+                </ul>
+                <small>Nota: Este valor será somado ao seu salário bruto para cálculo de impostos.</small>
+            `;
+            resultadoDiv.innerHTML = htmlResultado;
+            resultadoDiv.style.display = "block";
+        }
+        
+        // --- CÁLCULO DE SALÁRIO LÍQUIDO ---
+        function calcularSalarioLiquido() {
+            const salarioBruto = parseFloat(document.getElementById('salarioBruto').value);
+            const dependentes = parseInt(document.getElementById('dependentes').value) || 0;
+            const outrosDescontos = parseFloat(document.getElementById('outrosDescontos').value) || 0;
+            const resultadoDiv = document.getElementById('resultadoLiquido');
+            
+            if (isNaN(salarioBruto) || salarioBruto <= 0) {
+                resultadoDiv.innerHTML = "Por favor, insira um salário bruto válido.";
+                resultadoDiv.style.display = "block";
+                return;
+            }
+            
+            const descontoINSS = calcularINSS(salarioBruto);
+            const baseIRRF = salarioBruto - descontoINSS - (dependentes * 225.97); // Tabela 2024
+            const descontoIRRF = calcularIRRF(baseIRRF);
+            
+            const totalDescontos = descontoINSS + descontoIRRF + outrosDescontos;
+            const salarioLiquido = salarioBruto - totalDescontos;
+            
+            let htmlResultado = `
+                <h3>Detalhamento do Salário Líquido</h3>
+                <ul>
+                    <li><span>Salário Bruto:</span> <strong>${formatarMoeda(salarioBruto)}</strong></li>
+                    <li><span>Desconto INSS:</span> <strong style="color: #d9534f;">-${formatarMoeda(descontoINSS)}</strong></li>
+                    <li><span>Desconto IRRF:</span> <strong style="color: #d9534f;">-${formatarMoeda(descontoIRRF)}</strong></li>
+                    <li><span>Outros Descontos:</span> <strong style="color: #d9534f;">-${formatarMoeda(outrosDescontos)}</strong></li>
+                    <li class="total"><span>SALÁRIO LÍQUIDO:</span> <strong>${formatarMoeda(salarioLiquido)}</strong></li>
+                </ul>
+                <small>Cálculos baseados nas tabelas INSS e IRRF de 2024.</small>
+            `;
+            resultadoDiv.innerHTML = htmlResultado;
+            resultadoDiv.style.display = "block";
+        }
+        
+        function calcularINSS(salario) {
+            // Tabela INSS 2024
+            const teto = 7786.02;
+            let desconto = 0;
+            
+            if (salario > teto) salario = teto;
+
+            if (salario <= 1412.00) {
+                desconto = salario * 0.075;
+            } else if (salario <= 2666.68) {
+                desconto = (1412.00 * 0.075) + ((salario - 1412.00) * 0.09);
+            } else if (salario <= 4000.03) {
+                desconto = (1412.00 * 0.075) + ((2666.68 - 1412.00) * 0.09) + ((salario - 2666.68) * 0.12);
+            } else { // Acima de 4000.03
+                desconto = (1412.00 * 0.075) + ((2666.68 - 1412.00) * 0.09) + ((4000.03 - 2666.68) * 0.12) + ((salario - 4000.03) * 0.14);
+            }
+            
+            if (salario >= teto) {
+                desconto = (1412.00 * 0.075) + ((2666.68 - 1412.00) * 0.09) + ((4000.03 - 2666.68) * 0.12) + ((teto - 4000.03) * 0.14);
+            }
+
+            return parseFloat(desconto.toFixed(2));
+        }
+        
+        function calcularIRRF(base) {
+            // Tabela IRRF 2024
+            let imposto = 0;
+            
+            if (base <= 2259.20) {
+                imposto = 0;
+            } else if (base <= 2826.65) {
+                imposto = (base * 0.075) - 169.44;
+            } else if (base <= 3751.05) {
+                imposto = (base * 0.15) - 381.44;
+            } else if (base <= 4664.68) {
+                imposto = (base * 0.225) - 662.77;
+            } else { // Acima de 4664.68
+                imposto = (base * 0.275) - 896.00;
+            }
+
+            return (imposto > 0) ? parseFloat(imposto.toFixed(2)) : 0;
+        }
+
+        // --- CÁLCULO DE RESCISÃO (Melhorado) ---
+        function calcularRescisao() {
+            const salario = parseFloat(document.getElementById('salarioRescisao').value);
+            const dataAdmissao = new Date(document.getElementById('dataAdmissao').value + 'T00:00:00'); 
+            const dataDemissao = new Date(document.getElementById('dataDemissao').value + 'T00:00:00');
+            const diasSaldo = parseInt(document.getElementById('diasSaldo').value);
+            const tipoAviso = document.getElementById('avisoPrevio').value;
+            const feriasVencidas = document.getElementById('feriasVencidas').checked;
+            const resultadoDiv = document.getElementById('resultadoRescisao');
+
+            if (isNaN(salario) || isNaN(diasSaldo) || !dataAdmissao.getTime() || !dataDemissao.getTime()) {
+                resultadoDiv.innerHTML = "Por favor, preencha todos os campos corretamente.";
+                resultadoDiv.style.display = "block";
+                return;
+            }
+
+            // --- Itens da Rescisão ---
+            const saldoSalario = (salario / 30) * diasSaldo;
+            const avisoPrevio = (tipoAviso === 'indenizado') ? salario : 0; // Simplificado
+            
+            // 13º Proporcional (meses no ano da demissão)
+            const meses13 = dataDemissao.getMonth() + 1;
+            const decimoTerceiro = (salario / 12) * meses13;
+
+            // Férias Proporcionais + 1/3 (Simplificado - usando meses do ano)
+            // Lógica correta (período aquisitivo) é muito complexa para este escopo
+            const mesesFeriasProp = meses13; 
+            const feriasProporcionais = (salario / 12) * mesesFeriasProp;
+            const umTercoFerias = feriasProporcionais / 3;
+            const totalFeriasProp = feriasProporcionais + umTercoFerias;
+
+            // Férias Vencidas + 1/3
+            const feriasVencidasValor = (feriasVencidas) ? (salario + (salario / 3)) : 0;
+
+            const totalBruto = saldoSalario + avisoPrevio + decimoTerceiro + totalFeriasProp + feriasVencidasValor;
+
+            let htmlResultado = `
+                <h3>Verbas Rescisórias (Estimativa Bruta)</h3>
+                <ul>
+                    <li><span>Saldo de Salário (${diasSaldo} dias):</span> <strong>${formatarMoeda(saldoSalario)}</strong></li>
+                    <li><span>Aviso Prévio (${tipoAviso}):</span> <strong>${formatarMoeda(avisoPrevio)}</strong></li>
+                    <li><span>13º Proporcional (${meses13} meses):</span> <strong>${formatarMoeda(decimoTerceiro)}</strong></li>
+                    <li><span>Férias Vencidas + 1/3:</span> <strong>${formatarMoeda(feriasVencidasValor)}</strong></li>
+                    <li><span>Férias ProporcionAIS + 1/3:</span> <strong>${formatarMoeda(totalFeriasProp)}</strong></li>
+                    <li class="total"><span>TOTAL BRUTO ESTIMADO:</span> <strong>${formatarMoeda(totalBruto)}</strong></li>
+                </ul>
+                <small>Nota: Não inclui multa de 40% FGTS (paga via GRRF) nem descontos de INSS/IRRF sobre as verbas.</small>
+            `;
+
+            resultadoDiv.innerHTML = htmlResultado;
+            resultadoDiv.style.display = "block";
+        }
+        
+        // ----------------------------------
+        // INICIALIZAÇÃO DA APLICAÇÃO (Setup de Eventos)
+        // ----------------------------------
+        
+        // LÓGICA DE UTILIDADES (Tema)
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = '☀️';
+        const moonIcon = '🌙';
+        const currentTheme = localStorage.getItem('theme');
+
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                themeToggle.innerHTML = sunIcon;
+            } else {
+                themeToggle.innerHTML = moonIcon;
+            }
+        } else {
+            themeToggle.innerHTML = moonIcon;
+        }
+
+        themeToggle.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeToggle.innerHTML = moonIcon;
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeToggle.innerHTML = sunIcon;
+            }
+        });
+
+
+        // LÓGICA DAS ABAS (TABS)
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Desativar todos
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Ativar o clicado
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // LÓGICA DOS BOTÕES DE LIMPAR
+        document.querySelectorAll('.btn-limpar').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const calculator = e.target.closest('.calculator');
+                if (calculator) {
+                    calculator.querySelectorAll('input[type="number"], input[type="date"], select, input[type="checkbox"]').forEach(input => {
+                        if(input.type === 'number' || input.type === 'date') input.value = '';
+                        if(input.tagName === 'SELECT') input.selectedIndex = 0;
+                        if(input.type === 'checkbox') input.checked = false;
+                    });
+                    
+                    const resultDiv = calculator.querySelector('.result');
+                    if (resultDiv) {
+                        resultDiv.style.display = 'none';
+                        resultDiv.innerHTML = '';
+                    }
+                }
+            });
+        });
+            
+    </script>
+</body>
+</html>
